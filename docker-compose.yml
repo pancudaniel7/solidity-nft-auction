@@ -1,0 +1,24 @@
+version: "3.1"
+
+services:
+  ganache:
+    image: trufflesuite/ganache-cli:v6.12.2
+    ports:
+      - "8545:8545"
+    volumes:
+      - ./ganache_data:/ganache_data
+    entrypoint:
+      - node
+      - /app/ganache-core.docker.cli.js
+      - --account="0x6c384d2d7e5d8d3748f02d9f4e66e48cb79b4e1c0f6d5d9fa4a4b5e8b68f8ee4, 900000000000000000000"
+      - --account="0xa28586e549ed876df45f09b6e6f6f2b38064a4829e132e1f3f21dbac74e4d646, 800000000000000000000"
+      - --account="0xd07cf1273059a71719132f547e6f64820780a22e8cb66a764b30879e99d4c2db, 700000000000000000000"
+      - --deterministic
+      - --db=/ganache_data
+      - --networkId
+      - '5777'
+      - --chainId
+      - '1338'
+      - --hostname
+      - '0.0.0.0'
+      - --debug
