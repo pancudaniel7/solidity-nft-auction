@@ -1,2 +1,6 @@
 .history/
 ganache_data/
+build
+node_modules
+.vscode
+.DS_Store

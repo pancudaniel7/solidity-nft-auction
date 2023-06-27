@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.9.2",
+    "node-gyp": "^9.4.0",
+    "truffle-artifactor": "^4.0.30",
+    "truffle-deployer": "^3.0.2",
+    "web3": "^4.0.1"
+  }
+}
