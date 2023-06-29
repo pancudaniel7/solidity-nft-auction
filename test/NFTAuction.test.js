@@ -88,10 +88,6 @@ contract("NFT Auction test", () => {
       currentBid = await contract.getHighestBid({from: ACCOUNT_ONE_ADDRS})
       assert.equal(currentBid, 7,
           "Current bid dose not reflect the new updates")
-      
-      //check if the auction has ended
-      hasEnded = await contract.checkIfAuctionEnded({from: ACCOUNT_ONE_ADDRS})  
-      assert.isTrue(hasEnded, "The auction did not ended!")
 
       //close auction and the amount collected
       let newAccount1EtherBalance = await web3.eth.getBalance(accounts[0]);

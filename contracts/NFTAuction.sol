@@ -1,5 +1,5 @@
 // // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.16;
+pragma solidity ^0.8.18;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -10,7 +10,7 @@ contract NFTAuction is ERC721, Ownable, Pausable {
     address private _highestBidder;
     uint256 private _highestBid;
 
-    uint256 private _tokenID;
+    uint256 private immutable _tokenID;
 
     event HighestBidIncreased(address bidder, uint amount);
     event AuctionEnded(address winner, uint amount);
@@ -39,19 +39,15 @@ contract NFTAuction is ERC721, Ownable, Pausable {
     }
 
     function startAuction(
-        uint256 _auctionDurationTime,
-        uint256 _minimumBidAmount
+        uint256 auctionDurationTime,
+        uint256 minimumBidAmount
     ) external {
-        require(_auctionDurationTime > 0, "Duration time cannot be zero!");
-        require(_minimumBidAmount > 0, "Start bid ammount cannot be zero!");
+        require(auctionDurationTime > 0, "Duration time cannot be zero!");
+        require(minimumBidAmount > 0, "Start bid ammount cannot be zero!");
 
-        _auctionEndTime = block.timestamp + _auctionDurationTime;
-        _highestBid = _minimumBidAmount;
+        _auctionEndTime = block.timestamp + auctionDurationTime;
+        _highestBid = minimumBidAmount;
         _unpause();
-    }
-
-    function checkIfAuctionEnded() external view returns (bool) {
-        return block.timestamp >= _auctionEndTime;
     }
 
     function getOwner() external view onlyOwner returns (address) {
@@ -73,33 +69,33 @@ contract NFTAuction is ERC721, Ownable, Pausable {
 
         // transfer money back to the previews highest bidder
         uint256 contractBalance = address(this).balance;
-        if (contractBalance > 0 && _highestBidder != address(0) && _highestBid > 0) {
-            address payable _higherBidderPayableAddress = payable(_highestBidder);
-            _higherBidderPayableAddress.transfer(_highestBid);
-        }
+        require(contractBalance > 0, "The bid is lower then previews!");
 
-        // change highest new bidder and bid
+        address payable _higherBidderPayableAddress = payable(_highestBidder);
+        
+        uint _selectedBid = _highestBid;
         _highestBid = msg.value;
         _highestBidder = msg.sender;
-        emit HighestBidIncreased(msg.sender, _highestBid);
+
+        emit HighestBidIncreased(msg.sender, _selectedBid);
+        _higherBidderPayableAddress.transfer(_selectedBid);
     }
 
     function closeAuction() external onlyOwner {
         _pause();
-        
-        emit AuctionEnded(_highestBidder, _highestBid);
+        require(_highestBid > 0, "No bids were placed");
+
+        address _ownerAddr = owner();
+        require(_ownerAddr != address(0), "Invalid owner address");
 
         uint256 _contractBalance = address(this).balance;
-        address _owner = owner();
-        if (_contractBalance > 0 && _owner != address(0) && _highestBid > 0) {
-            address payable _currentOwnerAddress = payable(_owner);
-            _currentOwnerAddress.transfer(_contractBalance);
-        }
+        require(_contractBalance > 0, "Invalid contract balance");
 
         _transferOwnership(_highestBidder);
         _highestBidder = address(0);
         _highestBid = 0;
-        
-        emit OwnershipTransferred(_owner, _highestBidder);
+
+        address payable _payableOwnerAddress = payable(_ownerAddr);
+        _payableOwnerAddress.transfer(_contractBalance);
     }
 }
